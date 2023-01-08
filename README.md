@@ -53,12 +53,16 @@ $ gsutil -m rm -r gs://my_bucket/*  # м.б. удаление бакета це�
 https://cloud.google.com/run/pricing  
 https://cloud.yandex.ru/docs/serverless-containers/pricing
 
-|                  | Google      | Yandex  |
-| ---------------- | :---------: | :-----: |
-| Free vCPU sec    | 180 000     | 18 000  |
-| Free RAM GiB*sec | 360 000     | 36 000  |
+|                   | Google      | Yandex  |
+| ----------------- | :---------: | :-----: |
+| Free vCPU hour    | 50          | 5       |
+| Free RAM GiB*hour | 100         | 10      |
 
-Устанавливаем CLI `yc`. Пушить локальный образ сразу нельзя -- нужно вручную заливать его в Container Registry, предварительно включив руками [Docker Credential helper](https://cloud.yandex.ru/docs/container-registry/operations/authentication#cred-helper). Вообще, кучу всего того, что GCP за тебя делал сам, в YC нужно делать руками, например, создать Реестр, а потом его айдишник копипастить из браузера в консоль, чтоб пушить образ, см. https://cloud.yandex.ru/docs/container-registry/operations/docker-image/docker-image-push
+Деплоить локальный образ как Serverless Container сразу нельзя. Порядок действий следующий:
+* создать сам Реестр
+* создать Контейнер: `yc serverless container create --name <container_name>`
+* предварительно включив руками [Docker Credential helper](https://cloud.yandex.ru/docs/container-registry/operations/authentication#cred-helper), запушить образ в Container Registry, см. https://cloud.yandex.ru/docs/container-registry/operations/docker-image/docker-image-push
+* создать Ревизию в Контейнере -- это удобней через браузер
 
 Для создания Триггера по таймеру и непосредственно запуска контейнера нужно сделать два Сервис аккаунта, которым не нужно создавать ключи. Не спрашивайте зачем.
 
