@@ -68,6 +68,33 @@ https://cloud.yandex.ru/docs/serverless-containers/pricing
 
 Во время этих ручных манипуляций можно совершить такую ошибку, что если запушить новый образ, а потом еще раз задеплоить, то использоваться будет по прежнему старый контейнер. Потому что нужно `:latest` к урлу в команде деплоя, а сам он там не подразумевается, что неочевидно для пользователя GCP, который может без лишнего шага ручной загрузки в любой момент запушить локальный образ, и docker сам подхватит именно локальный `:latest` тег.
 
+#### пример инструкции
+
+```none
+build and test
+  $ yc container registry list
+  $ docker run --rm -ti -e PORT=8001 -p 8001:8001 cr.yandex/<registry ID>/my-container-name
+  $ curl http://127.0.0.1:8001/
+  $ docker build -t cr.yandex/.../my-container-name . < Dockerfile
+initial deploy:
+  $ docker push cr.yandex/.../my-container-name
+  $ yc serverless container create --name my-container-name
+  # создать service account (SA) с ролью container-registry.images.puller на репозиторий (выдача роли не на уровнее репозитория, а на уровне проекта ничего не дает)
+  $ yc iam service-account list | grep my-container-name
+  $ yc serverless container revision deploy \
+    --container-name my-container-name \
+    --image cr.yandex/.../my-container-name \
+    --service-account-id <SA id> \
+    --concurrency 1
+  # --execution-timeout 5s \
+  # создать Триггер (кнопка СЛЕВА в Serverless Containers)
+
+update:
+  $ docker build ...
+  $ docker push ...
+  $ yq serverless container revision deploy ...
+```
+
 ### Functions -> Cloud Functions
 
 Языков меньще. Ruby нет.
